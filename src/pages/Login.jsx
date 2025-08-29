@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { loginUser } from '../utils/auth';
 
 const Login = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({
@@ -14,12 +13,15 @@ const Login = ({ onLogin }) => {
     setLoading(true);
     setError('');
 
-    try {
-      const response = await loginUser(credentials);
-      onLogin(response.token);
-    } catch (err) {
-      setError(err.message || 'Login failed');
-    } finally {
+    // Demo login - works without backend
+    if (credentials.username === 'admin' && credentials.password === 'password') {
+      // Simulate API delay
+      setTimeout(() => {
+        onLogin('demo-token-12345');
+        setLoading(false);
+      }, 1000);
+    } else {
+      setError('Invalid credentials. Use: admin/password');
       setLoading(false);
     }
   };
@@ -41,6 +43,14 @@ const Login = ({ onLogin }) => {
           <p className="mt-2 text-center text-sm text-gray-600">
             Sign in to your security dashboard
           </p>
+          {/* Demo credentials hint */}
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+            <p className="text-sm text-blue-800 text-center">
+              <strong>Demo Credentials:</strong><br/>
+              Username: <code>admin</code><br/>
+              Password: <code>password</code>
+            </p>
+          </div>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
