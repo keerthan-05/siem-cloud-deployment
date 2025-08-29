@@ -20,8 +20,12 @@ class ErrorBoundary extends React.Component {
       return (
         <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900 text-center">
           <div>
-            <h1 className="text-2xl font-bold text-red-600">Something went wrong.</h1>
-            <p className="text-gray-600 dark:text-gray-300">Please refresh the page or try again later.</p>
+            <h1 className="text-2xl font-bold text-red-600">
+              Something went wrong.
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
+              Please refresh the page or try again later.
+            </p>
           </div>
         </div>
       );
@@ -32,6 +36,8 @@ class ErrorBoundary extends React.Component {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <ThemeProvider>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </ThemeProvider>
 );

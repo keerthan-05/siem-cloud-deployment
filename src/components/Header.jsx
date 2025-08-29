@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Shield } from "lucide-react";
+import ThemeToggle from "./ThemeToggle";   // ✅ Import toggle button
 
 const Header = ({ onLogout }) => {
   const [time, setTime] = useState(new Date());
@@ -26,6 +27,7 @@ const Header = ({ onLogout }) => {
             <span className="text-sm">
               Last updated: {time.toLocaleTimeString()}
             </span>
+            <ThemeToggle /> {/* ✅ Added dark mode toggle */}
             <button
               onClick={onLogout}
               className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg shadow transition"
