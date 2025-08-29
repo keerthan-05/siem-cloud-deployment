@@ -1,22 +1,23 @@
 import React from 'react';
 
-const KpiCard = ({ title, value, icon, color = 'blue' }) => {
-  const colorClasses = {
-    blue: 'bg-blue-500',
-    red: 'bg-red-500',
-    green: 'bg-green-500',
-    purple: 'bg-purple-500',
-    yellow: 'bg-yellow-500'
-  };
+const colorMap = {
+  blue: 'primary',
+  red: 'error',
+  green: 'success',
+  purple: 'accent',
+  yellow: 'warning'
+};
 
+const KpiCard = ({ title, value, icon, color = 'blue' }) => {
+  const bgColor = colorMap[color];
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-card rounded-lg shadow-lg p-6 hover:shadow-xl transition duration-300 ease-in-out">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm text-gray-500">{title}</p>
+          <p className="mt-1 text-3xl font-bold text-gray-900">{value}</p>
         </div>
-        <div className={`p-3 rounded-full ${colorClasses[color]} text-white text-xl`}>
+        <div className={`p-3 rounded-full bg-${bgColor} text-white text-2xl`}>
           {icon}
         </div>
       </div>
