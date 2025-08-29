@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.App {
+  text-align: center;
+}
+
+.alert-card {
+  @apply bg-white rounded-lg shadow-md p-4 mb-4 border-l-4;
+}
+
+.alert-high {
+  @apply border-red-500;
+}
+
+.alert-medium {
+  @apply border-yellow-500;
+}
+
+.alert-low {
+  @apply border-green-500;
+}
+
+.chart-container {
+  @apply bg-white rounded-lg shadow-md p-6;
+}
