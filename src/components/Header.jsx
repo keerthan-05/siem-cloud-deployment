@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Shield } from "lucide-react";
-import ThemeToggle from "./ThemeToggle";   // ✅ Import toggle button
+import ThemeToggle from "./ThemeToggle";  
 
 const Header = ({ onLogout }) => {
   const [time, setTime] = useState(new Date());
@@ -16,7 +16,7 @@ const Header = ({ onLogout }) => {
         <div className="flex justify-between items-center h-16">
           {/* Logo + Title */}
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-blue-500" />
+            <Shield className="w-6 h-6 text-blue-500" aria-hidden="true" />
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
               SIEM Dashboard
             </h1>
@@ -24,10 +24,10 @@ const Header = ({ onLogout }) => {
 
           {/* Right Section */}
           <div className="flex items-center gap-6 text-gray-600 dark:text-gray-300">
-            <span className="text-sm">
+            <span className="text-sm" aria-live="polite">
               Last updated: {time.toLocaleTimeString()}
             </span>
-            <ThemeToggle /> {/* ✅ Added dark mode toggle */}
+            <ThemeToggle />
             <button
               onClick={onLogout}
               className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg shadow transition"

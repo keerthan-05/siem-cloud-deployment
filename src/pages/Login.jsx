@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { Shield } from "lucide-react";
+import { loginUser } from "../utils/auth";
 
 const Login = ({ onLogin }) => {
-  const [credentials, setCredentials] = useState({
-    username: "",
-    password: "",
-  });
+  const [credentials, setCredentials] = useState({ username: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -14,29 +12,44 @@ const Login = ({ onLogin }) => {
     setLoading(true);
     setError("");
 
-    // Demo login logic
-    if (credentials.username === "admin" && credentials.password === "password") {
-      setTimeout(() => {
-        onLogin("demo-token-12345");
+    try {
+      // Try real backend login first
+      const res = await loginUser(credentials);
+      if (res?.token) {
+        onLogin(res.token);
+        return;
+      }
+      // If backend didn't return a token, treat as failure
+      throw new Error("No token in response");
+    } catch (err) {
+      console.error("Login failed:", err);
+
+      // ✅ DEMO FALLBACK: allow admin/password even if backend fails
+      if (
+        credentials.username === "admin" &&
+        credentials.password === "password"
+      ) {
+        onLogin("demo-token-12345"); // stores in App.jsx and proceeds
         setLoading(false);
-      }, 1000);
-    } else {
-      setError("Invalid credentials. Use: admin/password");
+        return;
+      }
+
+      setError("Login failed. Check your credentials.");
+    } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e) => {
-    setCredentials({
-      ...credentials,
-      [e.target.name]: e.target.value,
-    });
+  const handleChange = (e) =>
+    setCredentials((s) => ({ ...s, [e.target.name]: e.target.value }));
+
+  const useDemoCredentials = () => {
+    setCredentials({ username: "admin", password: "password" });
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4">
       <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 space-y-6">
-        {/* Logo + Title */}
         <div className="text-center space-y-2">
           <div className="flex justify-center">
             <Shield className="w-12 h-12 text-blue-600" />
@@ -49,7 +62,6 @@ const Login = ({ onLogin }) => {
           </p>
         </div>
 
-        {/* Form */}
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <input
@@ -59,6 +71,7 @@ const Login = ({ onLogin }) => {
               value={credentials.username}
               onChange={handleChange}
               required
+              autoComplete="username"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
             <input
@@ -68,13 +81,12 @@ const Login = ({ onLogin }) => {
               value={credentials.password}
               onChange={handleChange}
               required
+              autoComplete="current-password"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
 
-          {error && (
-            <div className="text-red-600 text-sm text-center">{error}</div>
-          )}
+          {error && <div className="text-red-600 text-sm text-center">{error}</div>}
 
           <button
             type="submit"
@@ -85,11 +97,15 @@ const Login = ({ onLogin }) => {
           </button>
         </form>
 
-        {/* Demo credentials */}
-        <div className="text-xs text-center text-gray-500 dark:text-gray-400">
-          <p>
-            <strong>Demo:</strong> <code>admin</code> / <code>password</code>
-          </p>
+        {/* Demo credentials helper */}
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={useDemoCredentials}
+            className="mt-2 text-sm text-blue-600 hover:underline"
+          >
+            Use Demo Credentials
+          </button>
         </div>
       </div>
     </div>

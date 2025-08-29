@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import EventsTable from "../components/EventsTable";
 import EventsBarChart from "../components/EventsBarChart";
 import EventsLineChart from "../components/EventsLineChart";
@@ -6,13 +6,17 @@ import EventSourcesTable from "../components/EventSourcesTable";
 import KpiCard from "../components/KpiCard";
 import ExportCsvButton from "../components/ExportCsvButton";
 import { fetchAlerts, fetchKpiData, fetchChartData } from "../utils/auth";
-import {
-  Bell,
-  AlertTriangle,
-  CheckCircle2,
-  Timer,
-  RefreshCcw,
-} from "lucide-react";
+import { Bell, AlertTriangle, CheckCircle2, Timer, RefreshCcw } from "lucide-react";
+
+// small debounce hook
+function useDebounced(value, delay = 300) {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return v;
+}
 
 const Dashboard = () => {
   const [alerts, setAlerts] = useState([]);
@@ -27,38 +31,63 @@ const Dashboard = () => {
   const [filter, setFilter] = useState("");
   const [severityFilter, setSeverityFilter] = useState("all");
 
-  useEffect(() => {
-    loadDashboardData();
-    const interval = setInterval(loadDashboardData, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  const debouncedFilter = useDebounced(filter, 300);
 
-  const loadDashboardData = async () => {
+  // single controller reused per load to allow cancel
+  const loadDashboardData = useCallback(async (signal) => {
+    setLoading(true);
     try {
-      setLoading(true);
       const [alertsData, kpiResponse, chartResponse] = await Promise.all([
         fetchAlerts(),
         fetchKpiData(),
         fetchChartData(),
       ]);
+      if (signal?.aborted) return;
       setAlerts(alertsData);
       setKpiData(kpiResponse);
       setChartData(chartResponse);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  };
+  }, []);
 
-  const filteredAlerts = alerts.filter((alert) => {
-    const matchesText =
-      alert.message.toLowerCase().includes(filter.toLowerCase()) ||
-      alert.source.toLowerCase().includes(filter.toLowerCase());
-    const matchesSeverity =
-      severityFilter === "all" || alert.severity.toLowerCase() === severityFilter;
-    return matchesText && matchesSeverity;
-  });
+  // initial + polling (pause when tab hidden)
+  useEffect(() => {
+    const controller = new AbortController();
+    const run = () => loadDashboardData(controller.signal);
+    run();
+
+    let intervalId = setInterval(() => {
+      if (document.visibilityState === "visible") run();
+    }, 30000);
+
+    const visHandler = () => {
+      if (document.visibilityState === "visible") run();
+    };
+    document.addEventListener("visibilitychange", visHandler);
+
+    return () => {
+      controller.abort();
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", visHandler);
+    };
+  }, [loadDashboardData]);
+
+  const filteredAlerts = useMemo(() => {
+    const f = debouncedFilter.trim().toLowerCase();
+    return alerts.filter((alert) => {
+      const matchesText =
+        !f ||
+        alert.message?.toLowerCase().includes(f) ||
+        alert.source?.toLowerCase().includes(f);
+      const matchesSeverity =
+        severityFilter === "all" ||
+        alert.severity?.toLowerCase() === severityFilter;
+      return matchesText && matchesSeverity;
+    });
+  }, [alerts, debouncedFilter, severityFilter]);
 
   if (loading) {
     return (
@@ -72,12 +101,10 @@ const Dashboard = () => {
     <div className="p-6 space-y-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">
-          SIEM Dashboard
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">SIEM Dashboard</h1>
         <div className="flex gap-3">
           <button
-            onClick={loadDashboardData}
+            onClick={() => loadDashboardData()}
             className="px-4 py-2 flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow transition"
           >
             <RefreshCcw className="w-4 h-4" />
