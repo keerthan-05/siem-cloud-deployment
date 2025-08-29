@@ -2,26 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Base app styles */
 .App {
-  text-align: center;
+  @apply min-h-screen bg-gray-50 text-gray-800 antialiased;
 }
 
+/* Alert cards */
 .alert-card {
-  @apply bg-white rounded-lg shadow-md p-4 mb-4 border-l-4;
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-4 border-l-4 transition-all duration-200;
 }
 
 .alert-high {
-  @apply border-red-500;
+  @apply border-red-500 bg-red-50 dark:bg-red-900/20;
 }
 
 .alert-medium {
-  @apply border-yellow-500;
+  @apply border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20;
 }
 
 .alert-low {
-  @apply border-green-500;
+  @apply border-green-500 bg-green-50 dark:bg-green-900/20;
 }
 
+/* Chart container */
 .chart-container {
-  @apply bg-white rounded-lg shadow-md p-6;
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-200;
+}
+
+/* Buttons */
+.btn {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium transition;
+}
+
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-400;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-400;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200;
+}
+
+/* Card wrapper */
+.card {
+  @apply bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition duration-200;
+}
+
+/* Utility classes */
+.table-container {
+  @apply overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700;
+}
+
+.table-header {
+  @apply bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium;
+}
+
+.table-row {
+  @apply hover:bg-gray-50 dark:hover:bg-gray-700 transition;
 }

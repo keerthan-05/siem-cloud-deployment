@@ -1,102 +1,104 @@
-// Base URL of your backend API (API Gateway endpoint)
-export const API_BASE_URL = "https://your-api-id.execute-api.region.amazonaws.com/dev";
+// Base URL of your backend API (from env or fallback)
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://your-api-id.execute-api.region.amazonaws.com/dev";
+
+// -------------------- AUTH TOKEN HELPERS --------------------
+const getAuthToken = () => localStorage.getItem("authToken");
+export const clearAuthToken = () => localStorage.removeItem("authToken");
+
+// -------------------- GENERIC API CALL --------------------
+async function apiCall(endpoint, options = {}) {
+  const token = getAuthToken();
+  const url = `${API_BASE_URL}${endpoint.startsWith("/") ? endpoint : "/" + endpoint}`;
+
+  const config = {
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers,
+    },
+    ...options,
+  };
+
+  try {
+    const response = await fetch(url, config);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `API error: ${response.status} ${response.statusText} - ${errorText}`
+      );
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error(`Error calling ${url}:`, error);
+    throw error;
+  }
+}
 
 // -------------------- ALERTS --------------------
-// Fetch all alerts
 export async function fetchAlerts() {
   try {
-    const response = await fetch(`${API_BASE_URL}/alerts`);
-    if (!response.ok) throw new Error("Failed to fetch alerts");
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching alerts:", error);
+    return await apiCall("/alerts");
+  } catch {
     return [];
   }
 }
 
-// Fetch single alert by ID
 export async function fetchAlertById(alertId) {
   try {
-    const response = await fetch(`${API_BASE_URL}/alerts/${alertId}`);
-    if (!response.ok) throw new Error("Failed to fetch alert");
-    return await response.json();
-  } catch (error) {
-    console.error(`Error fetching alert ${alertId}:`, error);
+    return await apiCall(`/alerts/${alertId}`);
+  } catch {
     return null;
   }
 }
 
 // -------------------- USERS --------------------
-// Fetch all users
 export async function fetchUsers() {
   try {
-    const response = await fetch(`${API_BASE_URL}/users`);
-    if (!response.ok) throw new Error("Failed to fetch users");
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching users:", error);
+    return await apiCall("/users");
+  } catch {
     return [];
   }
 }
 
-// Add a new user
 export async function addUser(userData) {
   try {
-    const response = await fetch(`${API_BASE_URL}/users`, {
+    return await apiCall("/users", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(userData),
     });
-    if (!response.ok) throw new Error("Failed to add user");
-    return await response.json();
-  } catch (error) {
-    console.error("Error adding user:", error);
+  } catch {
     return null;
   }
 }
 
 // -------------------- LOGIN --------------------
-// User login
 export async function loginUser(credentials) {
   try {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await apiCall("/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials),
     });
-    if (!response.ok) throw new Error("Login failed");
-    return await response.json(); // Returns token or user info
-  } catch (error) {
-    console.error("Login error:", error);
+    if (response.token) {
+      localStorage.setItem("authToken", response.token);
+    }
+    return response;
+  } catch {
     return null;
   }
 }
 
 // -------------------- UTILITY --------------------
-// Generic POST request
 export async function postData(endpoint, data) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) throw new Error("POST request failed");
-    return await response.json();
-  } catch (error) {
-    console.error(`Error posting to ${endpoint}:`, error);
-    return null;
-  }
+  return apiCall(endpoint, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
-// Generic GET request
 export async function getData(endpoint) {
-  try {
-    const response = await fetch(`${API_BASE_URL}/${endpoint}`);
-    if (!response.ok) throw new Error("GET request failed");
-    return await response.json();
-  } catch (error) {
-    console.error(`Error getting ${endpoint}:`, error);
-    return null;
-  }
+  return apiCall(endpoint);
 }

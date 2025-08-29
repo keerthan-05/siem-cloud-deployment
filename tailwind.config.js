@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
+  darkMode: "class", //Enable dark mode via "class"
   theme: {
     extend: {
       colors: {
@@ -19,7 +20,7 @@ export default {
         },
         success: '#4CAF50',
         warning: '#FFB300',
-        error:   '#D32F2F',
+        error: '#D32F2F',
         background: '#F5F7FA',
         card: '#FFFFFF',
       },
